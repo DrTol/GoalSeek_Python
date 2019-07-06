@@ -2,7 +2,7 @@
 You can use the Goal Seek to find the input value (for a given function) that results in a certain function result/output (goal). 
 
 ## Algorithms used in Goal Seek - Python
-This code involves of root finding methods; at a first step, via the Line Search, and, at the second step, the Bisection method. 
+This code involves of root finding methods; at a first step, via the Line Search method, and, at the second step, the Bisection method. 
 
 ## Requirements
 This tool requires that `NumPy` be installed.
