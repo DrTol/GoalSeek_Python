@@ -19,8 +19,8 @@ goal=10
 x0=3
 
 ## Here is the result
-Result=GoalSeek(fun,goal,x0)
-print(Result)
+Result_Example1=GoalSeek(fun,goal,x0)
+print('Result of Example 1 is = ', Result_Example1)
 
 ## EXAMPLE 2
 #   See Reference for the Excel tutorial: https://www.ablebits.com/office-addins-blog/2018/09/05/use-goal-seek-excel-what-if-analysis/
@@ -44,5 +44,5 @@ goal=1000           # [$]
 x0=100
 
 ## Here is the result
-Result=GoalSeek(Revenue,goal,x0)
-print(Result)
+Result_Example2=GoalSeek(Revenue,goal,x0)
+print('Result of Example 2 is = ', Result_Example2)
