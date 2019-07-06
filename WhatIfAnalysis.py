@@ -6,8 +6,8 @@ def GoalSeek(fun,goal,x0,fTol=0.0001,MaxIter=1000):
 
     # Inputs
     #   fun     : Function to be evaluated
-    #   goal    : XXX
-    #   x0      : Starting point
+    #   goal    : Expected result/output
+    #   x0      : Initial estimate/Starting point
 
     # Initial check
     if fun(x0)==goal:
