@@ -63,14 +63,13 @@ def GoalSeek(fun,goal,x0,fTol=0.0001,MaxIter=1000):
     # Bisection Method
     iter_num=0
     error=10
-    f_pre=fun(x_lb)
+
     while iter_num<MaxIter and fTol<error:
         
         x_m=(x_lb+x_ub)/2
         f_m=fun(x_m)-goal
 
-        error=abs(f_m-f_pre)
-        f_pre=f_m
+        error=abs(f_m)
 
         if (fun(x_lb)-goal)*(f_m)<0:
             x_ub=x_m
