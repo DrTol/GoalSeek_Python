@@ -39,8 +39,8 @@ def GoalSeek(fun,goal,x0,fTol=0.0001,MaxIter=1000):
 
                     index_ub=index_lb+np.array([1])
 
-                    x_lb=np.asscalar(np.array(cA)[index_lb][0])
-                    x_ub=np.asscalar(np.array(cA)[index_ub][0])
+                    x_lb=np.array(cA)[index_lb][0].item()
+                    x_ub=np.array(cA)[index_ub][0].item()
                     break_nested=True
                     break
                 else: # Two or more roots possible
@@ -49,8 +49,8 @@ def GoalSeek(fun,goal,x0,fTol=0.0001,MaxIter=1000):
 
                     print('Other solution possible at around, x0 = ', np.array(cA)[index_lb[0][1]])
 
-                    x_lb=np.asscalar(np.array(cA)[index_lb[0][0]])
-                    x_ub=np.asscalar(np.array(cA)[index_ub[0][0]])
+                    x_lb=np.array(cA)[index_lb[0][0]].item()
+                    x_ub=np.array(cA)[index_ub[0][0]].item()
                     break_nested=True
                     break
 
