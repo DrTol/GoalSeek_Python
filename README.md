@@ -1,3 +1,5 @@
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F2F01JB1KE)
+
 # Excel 'Goal Seek' function in Python
 You can use the Goal Seek to find the input value (for a given function) that results in a certain function result/output (goal). 
 
