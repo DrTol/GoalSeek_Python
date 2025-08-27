@@ -1,121 +1,82 @@
-# -*- coding: utf-8 -*-
-"""
-Developed on 2019
+## ExampleScript running GoalSeek (Excel) in Python
+#   prepared by Dr. Hakan İbrahim Tol
+#
+#   Updated examples added for robustness and new features (thanks to ChatGPT)
+#
+#   Required Python Library: NumPy
 
-@author: Dr. Hakan İbrahim Tol (thanks to ChatGPT for optimization revision)
-
-"""
-
-""" LIBRARIES """
-
-import numpy as np
+from WhatIfAnalysis import GoalSeek
 import math
 
-class GoalSeekError(Exception):
-    pass
+## EXAMPLE 1
+#   Finding the x value, its square results in goal = 10
 
-def GoalSeek(fun, goal, x0, fTol=1e-6, MaxIter=200, positive_only=False, bracket=None):
-    """
-    Excel-like goal seek: solves fun(x) = goal.
-    Returns the root x (float). Raises GoalSeekError on failure.
+def fun(x):
+    return x**2
 
-    Parameters
-    ----------
-    fun : callable
-        Function of a single variable.
-    goal : float
-        Target value for fun(x).
-    x0 : float
-        Initial guess (used if bracket is not provided).
-    fTol : float
-        Absolute tolerance on |fun(x) - goal|.
-    MaxIter : int
-        Max iterations for bisection after bracketing.
-    positive_only : bool
-        If True, only search x > 0.
-    bracket : tuple(a, b) or None
-        Optional explicit bracketing interval with a sign change for
-        g(x) = fun(x) - goal. If None, a bracket is auto-built around x0.
-    """
+goal = 10
+x0   = 3
 
-    def g(x):
-        val = fun(x) - goal
-        if not np.isfinite(val):
-            raise GoalSeekError(f"Non-finite function value at x={x}.")
-        return val
+Result_Example1 = GoalSeek(fun, goal, x0)
+print('Result of Example 1 is = ', Result_Example1)
 
-    # --- Build or validate bracket [a,b] with sign change ---
-    if bracket is not None:
-        a, b = float(bracket[0]), float(bracket[1])
-        if a == b:
-            raise GoalSeekError("Invalid bracket: endpoints are identical.")
-        if a > b:
-            a, b = b, a
-        if positive_only and b <= 0:
-            raise GoalSeekError("Positive root requested, but bracket is non-positive.")
-        if positive_only:
-            a = max(a, np.finfo(float).tiny)
-        ga, gb = g(a), g(b)
-        if ga == 0.0:
-            return a
-        if gb == 0.0:
-            return b
-        if np.sign(ga) == np.sign(gb):
-            raise GoalSeekError("Provided bracket does not contain a sign change.")
-    else:
-        # Auto-bracket by expanding around x0
-        a = float(x0) - 1.0
-        b = float(x0) + 1.0
-        if positive_only:
-            a = max(a, np.finfo(float).tiny)
-            if b <= a:
-                b = a * 2.0
 
-        expand_factor = 2.0
-        max_span = 1e16
-        tries = 0
+## EXAMPLE 2
+#   Reference: https://www.ablebits.com/office-addins-blog/2018/09/05/use-goal-seek-excel-what-if-analysis/
+#
+#   Problem: If you sell 100 items at $5 each, minus the 10% commission, 
+#   you will make $450. The question is: How many items do you have to 
+#   sell to make $1,000?
 
-        while True:
-            tries += 1
-            ga, gb = g(a), g(b)
-            if ga == 0.0:
-                return a
-            if gb == 0.0:
-                return b
-            if np.sign(ga) != np.sign(gb):
-                break  # bracket found
+def Revenue(x):
+    item_price = 5    # [$]
+    commission = 0.1  # 10%
+    return item_price * x * (1 - commission)
 
-            width = b - a
-            if width <= 0:
-                width = abs(a) + abs(b) + 1.0
-            expand = width * (expand_factor - 1.0)
+goal = 1000
+x0   = 100
 
-            if positive_only:
-                a = max(a, np.finfo(float).tiny)
-                b = b + expand if b > 0 else a * (1.0 + expand_factor)
-            else:
-                a -= expand
-                b += expand
+Result_Example2 = GoalSeek(Revenue, goal, x0)
+print('Result of Example 2 is = ', Result_Example2)
 
-            if (b - a) > max_span or tries > 200:
-                raise GoalSeekError(
-                    "Failed to bracket a root. Provide a better x0 or an explicit bracket."
-                )
 
-        # fallthrough with valid a,b,ga,gb
-    # --- Bisection ---
-    iterations = 0
-    while iterations < MaxIter:
-        m = 0.5 * (a + b)
-        gm = g(m)
-        if abs(gm) <= fTol:
-            return m
-        # shrink to side with sign change
-        if np.sign(g(a)) != np.sign(gm):
-            b = m
-        else:
-            a = m
-        iterations += 1
+## EXAMPLE 3
+#   Positive-only solution: solve x^2 = 9, expecting x = 3 (not -3)
 
-    # If here, return best midpoint even if not within tolerance
-    return 0.5 * (a + b)
+def square(x):
+    return x**2
+
+goal = 9
+x0   = 1
+
+Result_Example3 = GoalSeek(square, goal, x0, positive_only=True)
+print('Result of Example 3 (positive root only) is = ', Result_Example3)
+
+
+## EXAMPLE 4
+#   Bracketed solve for a function with a singularity.
+#   f(x) = (10*x/(10 - x))^2   has a singularity at x=10.
+#   Solve f(x) = 25 for x in (0,10).
+
+def rational(x):
+    return (10 * x / (10 - x))**2
+
+goal = 25
+# bracket must avoid x=10
+Result_Example4 = GoalSeek(rational, goal, x0=1.0, bracket=(1e-6, 9.999), positive_only=True)
+print('Result of Example 4 is = ', Result_Example4)
+
+
+## EXAMPLE 5
+#   Angles: atan(x) returns radians. To target 30 degrees, convert to radians.
+#   Solve atan(x) = 30 degrees.
+
+def atan_func(x):
+    return math.atan(x)
+
+goal_deg = 30.0
+goal_rad = math.radians(goal_deg)
+
+x0 = 0.5
+Result_Example5 = GoalSeek(atan_func, goal_rad, x0, positive_only=True)
+print('Result of Example 5 (atan target 30 deg) is = ', Result_Example5)
