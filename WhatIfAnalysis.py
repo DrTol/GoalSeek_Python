@@ -1,88 +1,121 @@
+# -*- coding: utf-8 -*-
+"""
+Developed on 2019
+
+@author: Dr. Hakan İbrahim Tol (thanks to ChatGPT for optimization revision)
+
+"""
+
+""" LIBRARIES """
+
 import numpy as np
+import math
 
-def GoalSeek(fun,goal,x0,fTol=0.0001,MaxIter=1000):
-    # Goal Seek function of Excel
-    #   via use of Line Search and Bisection Methods
+class GoalSeekError(Exception):
+    pass
 
-    # Inputs
-    #   fun     : Function to be evaluated
-    #   goal    : Expected result/output
-    #   x0      : Initial estimate/Starting point
+def GoalSeek(fun, goal, x0, fTol=1e-6, MaxIter=200, positive_only=False, bracket=None):
+    """
+    Excel-like goal seek: solves fun(x) = goal.
+    Returns the root x (float). Raises GoalSeekError on failure.
 
-    # Initial check
-    if fun(x0)==goal:
-        print('Exact solution found')
-        return x0
+    Parameters
+    ----------
+    fun : callable
+        Function of a single variable.
+    goal : float
+        Target value for fun(x).
+    x0 : float
+        Initial guess (used if bracket is not provided).
+    fTol : float
+        Absolute tolerance on |fun(x) - goal|.
+    MaxIter : int
+        Max iterations for bisection after bracketing.
+    positive_only : bool
+        If True, only search x > 0.
+    bracket : tuple(a, b) or None
+        Optional explicit bracketing interval with a sign change for
+        g(x) = fun(x) - goal. If None, a bracket is auto-built around x0.
+    """
 
-    # Line Search Method
-    step_sizes=np.logspace(-1,4,6)
-    scopes=np.logspace(1,5,5)
+    def g(x):
+        val = fun(x) - goal
+        if not np.isfinite(val):
+            raise GoalSeekError(f"Non-finite function value at x={x}.")
+        return val
 
-    vFun=np.vectorize(fun)
+    # --- Build or validate bracket [a,b] with sign change ---
+    if bracket is not None:
+        a, b = float(bracket[0]), float(bracket[1])
+        if a == b:
+            raise GoalSeekError("Invalid bracket: endpoints are identical.")
+        if a > b:
+            a, b = b, a
+        if positive_only and b <= 0:
+            raise GoalSeekError("Positive root requested, but bracket is non-positive.")
+        if positive_only:
+            a = max(a, np.finfo(float).tiny)
+        ga, gb = g(a), g(b)
+        if ga == 0.0:
+            return a
+        if gb == 0.0:
+            return b
+        if np.sign(ga) == np.sign(gb):
+            raise GoalSeekError("Provided bracket does not contain a sign change.")
+    else:
+        # Auto-bracket by expanding around x0
+        a = float(x0) - 1.0
+        b = float(x0) + 1.0
+        if positive_only:
+            a = max(a, np.finfo(float).tiny)
+            if b <= a:
+                b = a * 2.0
 
-    for scope in scopes:
-        break_nested=False
-        for step_size in step_sizes:
+        expand_factor = 2.0
+        max_span = 1e16
+        tries = 0
 
-            cApos=np.linspace(x0,x0+step_size*scope,int(scope))
-            cAneg=np.linspace(x0,x0-step_size*scope,int(scope))
+        while True:
+            tries += 1
+            ga, gb = g(a), g(b)
+            if ga == 0.0:
+                return a
+            if gb == 0.0:
+                return b
+            if np.sign(ga) != np.sign(gb):
+                break  # bracket found
 
-            cA=np.concatenate((cAneg[::-1],cApos[1:]),axis=0)
+            width = b - a
+            if width <= 0:
+                width = abs(a) + abs(b) + 1.0
+            expand = width * (expand_factor - 1.0)
 
-            fA=vFun(cA)-goal
+            if positive_only:
+                a = max(a, np.finfo(float).tiny)
+                b = b + expand if b > 0 else a * (1.0 + expand_factor)
+            else:
+                a -= expand
+                b += expand
 
-            if np.any(np.diff(np.sign(fA))):
+            if (b - a) > max_span or tries > 200:
+                raise GoalSeekError(
+                    "Failed to bracket a root. Provide a better x0 or an explicit bracket."
+                )
 
-                index_lb=np.nonzero(np.diff(np.sign(fA)))
-
-                if len(index_lb[0])==1:
-
-                    index_ub=index_lb+np.array([1])
-
-                    x_lb=np.asscalar(np.array(cA)[index_lb][0])
-                    x_ub=np.asscalar(np.array(cA)[index_ub][0])
-                    break_nested=True
-                    break
-                else: # Two or more roots possible
-
-                    index_ub=index_lb+np.array([1])
-
-                    print('Other solution possible at around, x0 = ', np.array(cA)[index_lb[0][1]])
-
-                    x_lb=np.asscalar(np.array(cA)[index_lb[0][0]])
-                    x_ub=np.asscalar(np.array(cA)[index_ub[0][0]])
-                    break_nested=True
-                    break
-
-        if break_nested:
-            break
-    if not x_lb or not x_ub:
-        print('No Solution Found')
-        return
-
-    # Bisection Method
-    iter_num=0
-    error=10
-
-    while iter_num<MaxIter and fTol<error:
-        
-        x_m=(x_lb+x_ub)/2
-        f_m=fun(x_m)-goal
-
-        error=abs(f_m)
-
-        if (fun(x_lb)-goal)*(f_m)<0:
-            x_ub=x_m
-        elif (fun(x_ub)-goal)*(f_m)<0:
-            x_lb=x_m
-        elif f_m==0:
-            print('Exact spolution found')
-            return x_m
+        # fallthrough with valid a,b,ga,gb
+    # --- Bisection ---
+    iterations = 0
+    while iterations < MaxIter:
+        m = 0.5 * (a + b)
+        gm = g(m)
+        if abs(gm) <= fTol:
+            return m
+        # shrink to side with sign change
+        if np.sign(g(a)) != np.sign(gm):
+            b = m
         else:
-            print('Failure in Bisection Method')
-        
-        iter_num+=1
+            a = m
+        iterations += 1
 
-    return x_m
-
-
+    # If here, return best midpoint even if not within tolerance
+    return 0.5 * (a + b)
