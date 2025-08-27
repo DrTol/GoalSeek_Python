@@ -63,16 +63,16 @@ Solve `x^2 = 9` but return only the positive solution `x = 3` (the other solutio
 Solve `atan(x) = 30°`. Since atan returns radians, convert the goal to radians first.
 
 ## Updates in This Version
-+ **Removed deprecated `np.asscalar`**
++ **Removed deprecated** `np.asscalar`
 Fixed `NumPy` deprecation that caused crashes in modern environments.
 
 + **Replaced vectorized line search with deterministic auto-bracketing**
 Eliminates “`x_lb` referenced before assignment” and improves reliability.
 
-+ **Added `positive_only` option**
++ **Added** `positive_only` **option**
 Useful for domains where only positive solutions make sense (e.g., finance).
 
-+ **Added optional `bracket=(a, b)`**
++ **Added optional** `bracket=(a, b)`
 Lets you guide the solver in tricky cases (singularities, constrained domains).
 
 + **Kept the original call pattern**
