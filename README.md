@@ -45,7 +45,7 @@ Returns a **float** (the root).
 Raises a **GoalSeekError** if it cannot find a valid interval or the function is not finite at sampled points.
 
 ## Example Problems (described)
-> The concrete Python for these is in `[ExampleScript.py](https://github.com/DrTol/GoalSeek_Python/blob/master/ExampleScript.py)` inside the repo.
+> The concrete Python for these is in `ExampleScript.py` inside the repo: [ExampleScript.py](https://github.com/DrTol/GoalSeek_Python/blob/master/ExampleScript.py)
 
 1. Square equals target
 Find `x` such that `x^2 = 10`. (Classic root finding.)
