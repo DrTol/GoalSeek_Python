@@ -1,7 +1,11 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F2F01JB1KE)
 
-# Excel 'Goal Seek' function in Python
-You can use the Goal Seek to find the input value (for a given function) that results in a certain function result/output (goal). 
+# Excel “Goal Seek” in Python
+Find the input value that makes a function reach a target output (the “goal”), similar to Excel’s Goal Seek.
+
+This repo provides a small, dependency-light helper you can call like:
+<pre> ```python x = GoalSeek(fun, goal, x0) ``` </pre>
+It solves fun(x) = goal and returns the x value.
 
 ## Algorithms used in Goal Seek - Python
 This code involves of root finding methods; at a first step, via the Line Search method, and, at the second step, the Bisection method. 
