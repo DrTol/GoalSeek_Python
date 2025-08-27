@@ -4,7 +4,9 @@
 Find the input value that makes a function reach a target output (the “goal”), similar to Excel’s Goal Seek.
 
 This repo provides a small, dependency-light helper you can call like:
-<pre> ```python x = GoalSeek(fun, goal, x0) ``` </pre>
+```python 
+x = GoalSeek(fun, goal, x0)
+```
 It solves fun(x) = goal and returns the x value.
 
 ## Algorithms used in Goal Seek - Python
